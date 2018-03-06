@@ -2,7 +2,10 @@ import time
 import numpy as np
 import pandas as pd
 
-## Filenames
+#Suppress the SettingWithCopyWarning error
+pd.options.mode.chained_assignment = None
+
+# Filenames
 chicago = 'chicago.csv'
 new_york_city = 'new_york_city.csv'
 washington = 'washington.csv'
@@ -53,7 +56,7 @@ def get_city():
     Args:
         none.
     Returns:
-        (str) Filename for a city's bikeshare data.
+        (str) Filename for a city's bikeshare data until it gets the valid input.
     '''
     city = input('\nHello! Let\'s explore some US bikeshare data!\n'
                  'Would you like to see data for Chicago, New York, or Washington?\n'
@@ -69,7 +72,7 @@ def get_city():
         return washington
     else:
         print('Your input is not valid.\n')
-        get_city()
+        return get_city()
 
 def get_time_period():
     '''Asks the user for a time period and returns the specified filter.
@@ -77,7 +80,7 @@ def get_time_period():
     Args:
         none.
     Returns:
-        TODO: fill out return type and description (see get_city for an example)
+        (str) time period for a city's bikeshare data until it gets the valid input.
     '''
     time_period = input('\nWould you like to filter the data by month, day, or not at'
                         ' all?\n'
@@ -91,7 +94,7 @@ def get_time_period():
         return 'none'
     else:
         print('Your input is not valid.\n')
-        get_time_period()
+        return get_time_period()
 
 
 def get_month():
@@ -111,7 +114,7 @@ def get_month():
         print('{} selected\n'.format(string_month(int_month)))
     except:
         print('Your input is not valid.\n')
-        get_month()
+        return get_month()
 
     return int_month
 
@@ -131,7 +134,7 @@ def get_day():
         print('{}th selected\n'.format(int_day))
     except:
         print('Your input is not valid.\n')
-        get_day()
+        return get_day()
 
     return int_day
 
@@ -365,24 +368,33 @@ def birth_years(raw_data, month, day):
     return earliest, recent, popular
 
 
-def display_data(raw_data):
+def display_data(raw_data, month, day):
     '''Displays five lines of data if the user specifies that they would like to.
     After displaying five lines, ask the user if they would like to see five more,
     continuing asking until they say stop.
 
     Args:
         raw_data (DataFrame): raw data to show
+        month (int): month to query.
+        day (int): date to query.
     Returns:
         none.
     '''
+
     while True:
         display = input('\nWould you like to view individual trip data?'
                         ' Type \'Y\' or \'N\'.\n')
         if display == 'Y':
+            if month != 0:
+                raw_data['month'] = raw_data['Start Time'].dt.month
+                month_df = raw_data[raw_data['month'] == month]
+            if day != 0:
+                month_df['day'] = month_df['Start Time'].dt.day
+                df = month_df[month_df['day'] == day]
             i_first = 0
             i_last = 5
             while True:
-                print(raw_data.iloc[i_first:i_last, :])
+                print(df.iloc[i_first:i_last, :])
                 print('\n')
                 display = input("Would you like to view 5 rows more? Type \'Y\' or \'N\'.\n")
                 if display == 'Y':
@@ -500,7 +512,7 @@ def statistics():
         print("That took %s seconds.\n" % (time.time() - start_time))
 
     # Display five lines of data at a time if user specifies that they would like to
-    display_data(raw_data)
+    display_data(raw_data, month, day)
 
     # Restart?
     restart = input('\nWould you like to restart? Type \'Y\' or \'N\'.\n')
